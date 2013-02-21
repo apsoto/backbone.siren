@@ -1,9 +1,10 @@
 {
-    "name": "backbone.siren",
-    "version": "0.0.0",
-    "dependencies": {
-        "backbone": "backbone",
-        "jquery": "~1.9.1",
-        "underscore": "underscore"
-    }
+  "name": "backbone.siren",
+  "version": "0.0.0",
+  "dependencies": {
+    "backbone": "backbone",
+    "jquery": "~1.9.1",
+    "underscore": "underscore",
+    "backbone-relational": "~0.7.1"
+  }
 }
