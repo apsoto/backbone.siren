@@ -15,7 +15,8 @@
     'use strict';
 
     // The store
-    var _store = {}
+    var modelCounter = 0
+    , _store = {}
     , store = {
         _store: {}
 
@@ -147,7 +148,7 @@
         var rels = [];
 
         _.each(entities, function (entity) {
-            var model = new Backbone.Siren.Model.extend(entity);
+            var model = new Backbone.Siren.Model(entity);
             models.push(model);
 
             // @todo for now just assuming everything is a hasOne relationship
@@ -158,7 +159,7 @@
             relations.push({
                 type: Backbone.HasOne
                 , key: 'rel'
-                , relatedModel: '?' // @todo do we create a generic siren Model or do we create specific model "types"?
+                , relatedModel: SirenModels[modelCounter]
             });
         });
 
@@ -166,7 +167,7 @@
     }
 
 
-    return {
+    var Siren = {
         store: store
 
         , Model: Backbone.RelationalModel.extend({
@@ -249,8 +250,15 @@
              * @param {Object} options
              */
             , constructor: function (sirenObj, options) {
+                modelCounter++;
+                SirenModels[modelCounter] = Backbone.Siren.Model;
+
+                options = options || {};
+                options.parse = true;
+
                 this.relations = parseRelations(sirenObj);
-                return Backbone.RelationalModel.apply(this, arguments);
+
+                Backbone.RelationalModel.call(this, sirenObj, options);
             }
 
         })
@@ -288,4 +296,7 @@
         })
     };
 
+    var SirenModels = [Siren.Model];
+
+    return Siren;
 }));
