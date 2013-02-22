@@ -48,6 +48,11 @@
     }
 
 
+    function getEntities(sirenObj) {
+        return sirenObj.entities;
+    }
+
+
     /**
      *
      * @param entity
@@ -130,10 +135,41 @@
     }
 
 
+    /**
+     * Parse a siren object into entities, turn those entities into models and then return the relationships
+     *
+     * @param sirenObj
+     */
+    function parseRelations(sirenObj) {
+        var entities = getEntities(sirenObj);
+        var models = [];
+        var relations = [];
+        var rels = [];
+
+        _.each(entities, function (entity) {
+            var model = new Backbone.Siren.Model.extend(entity);
+            models.push(model);
+
+            // @todo for now just assuming everything is a hasOne relationship
+            rels.push(model.rel());
+        });
+
+        _.each(rels, function (rel) {
+            relations.push({
+                type: Backbone.HasOne
+                , key: 'rel'
+                , relatedModel: '?' // @todo do we create a generic siren Model or do we create specific model "types"?
+            });
+        });
+
+        return relations;
+    }
+
+
     return {
         store: store
 
-        , Model: Backbone.Model.extend({
+        , Model: Backbone.RelationalModel.extend({
 
             url: url
             , classes: classes
@@ -212,12 +248,9 @@
              * @param {Object} attributes
              * @param {Object} options
              */
-            , constructor: function (attributes, options) {
-                options = options || {};
-
-                // Force "parse" to be called on instantiation: http://stackoverflow.com/questions/11068989/backbone-js-using-parse-without-calling-fetch/14950519#14950519
-                options.parse = true;
-                Backbone.Model.call(this, attributes, options);
+            , constructor: function (sirenObj, options) {
+                this.relations = parseRelations(sirenObj);
+                return Backbone.RelationalModel.apply(this, arguments);
             }
 
         })
@@ -245,12 +278,12 @@
              * @param {Object} attributes
              * @param {Object} options
              */
-            , constructor: function (attributes, options) {
+            , constructor: function (sirenObj, options) {
                 options = options || {};
 
                 // Force "parse" to be called on instantiation: http://stackoverflow.com/questions/11068989/backbone-js-using-parse-without-calling-fetch/14950519#14950519
                 options.parse = true;
-                Backbone.Collection.call(this, attributes, options);
+                Backbone.Collection.call(this, sirenObj, options);
             }
         })
     };
